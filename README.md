@@ -2,7 +2,7 @@
 
 A CMU 15-122 TA project for creating educational animations and slides using Manim.
 
-## Quick Setup
+## Setup
 
 ### 1. Install uv
 
@@ -45,7 +45,7 @@ To make Manim Sideview use your project's virtual environment:
 1. Open VS Code settings (Cmd/Ctrl + ,)
 2. Search for "manim sideview"
 3. Find "Manim-sideview: Executable Path"
-4. Set it to: `${workspaceFolder}/.venv/bin/manim`
+4. Set it to the **absolute** path equivalent to: `${workspaceFolder}/.venv/bin/manim`
 
 ## Project Structure
 
@@ -56,7 +56,9 @@ manim122/
 │   └── settings.json       # VS Code workspace settings
 ├── manim122lib/            # Shared library code
 │   ├── __init__.py
-│   └── ...                 # Common utilities and styles
+│   ├── pyproject.toml      # manimlib122 configuration
+│   ├── src/manim122lib/
+│   └───── ...              # Common utilities
 ├── pc01/                   # Precept 1 materials
 ├── pc02/                   # Precept 2 materials
 ├── ...
