@@ -1,5 +1,5 @@
 from manim import *
-from manim122_lib import BinaryTreeNode
+from manim122lib import BinaryTreeNode
 
 class TestScene(Scene):
   def construct(self):
