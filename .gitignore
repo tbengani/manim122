@@ -5,6 +5,16 @@ build/
 dist/
 wheels/
 *.egg-info
+*.log
+*.DS_Store
+media/
 
 # Virtual environments
 .venv
+
+# IDE stuff
+.vscode/
+.idea/
+
+# Sideview history or temp files
+sideview_tmp/

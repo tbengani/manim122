@@ -1,6 +1,10 @@
-def main():
-    print("Hello from manim122!")
+from manim import *
+from manim122_lib import BinaryTreeNode
 
+class TestScene(Scene):
+  def construct(self):
+    t = Text("Manim is working!")
 
-if __name__ == "__main__":
-    main()
+    self.play(Write(t))
+
+    self.wait(3)
