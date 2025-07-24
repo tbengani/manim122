@@ -47,6 +47,21 @@ To make Manim Sideview use your project's virtual environment:
 3. Find "Manim-sideview: Executable Path"
 4. Set it to the **absolute** path equivalent to: `${workspaceFolder}/.venv/bin/manim`
 
+### 6. (Optional) Configure local VS Code `settings.json` to get autocomplete for manim122lib
+
+1. Make a .vscode folder in the root and create a `settings.json` file
+2. Paste the following into this file:
+
+```
+{
+    "python.analysis.extraPaths": ["${workspaceFolder}/manim122lib/src"],
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.autoImportCompletions": true
+}
+```
+
+3. Restart VS Code
+
 ## Project Structure
 
 ```

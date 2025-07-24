@@ -3,8 +3,13 @@ from manim122lib import *
 
 class PC13(Scene):
   def construct(self):
-    b = BinaryTreeNode(1)
+    b1 = BinaryTreeNode(1)
+    b1.shift(LEFT)
 
-    self.add(Text("PC13"))
-    self.play(Write(b))
-    self.wait(3)
+    b2 = BinaryTreeNode(2)
+    b2.shift(RIGHT)
+
+    self.play(Write(b1), Write(b2))
+    self.wait(1)
+    BinaryTreeNode.swap_positions(self, b1, b2)
+    self.wait(1)
