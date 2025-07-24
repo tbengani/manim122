@@ -3,9 +3,13 @@ name = "manim122"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "manim>=0.19.0",
     "manim-slides>=5.5.1",
+    "manim122lib",
     "pyqt6>=6.9.1",
 ]
+
+[tool.uv.sources]
+manim122lib = { path = "manim122lib", editable = true }
