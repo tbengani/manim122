@@ -49,7 +49,7 @@ To make Manim Sideview use your project's virtual environment:
 
 ### 6. (Optional) Configure local VS Code `settings.json` to get autocomplete for manim122lib
 
-1. Make a .vscode folder in the root and create a `settings.json` file
+1. Make a `.vscode` folder in the root and create a `settings.json` file
 2. Paste the following into this file:
 
 ```
@@ -85,13 +85,15 @@ manim122/
 Navigate to any precept folder and run:
 
 ```bash
-uv run manim scene.py SceneName -pql
+uv run manim main.py PC{Precept No.} -pql
 ```
+
+e.g `PC05` for the fifth precept
 
 For slides:
 
 ```bash
-uv run manim-slides SceneName scene.py
+uv run manim-slides PC{Precept No.} main.py
 ```
 
 ### Using Manim Sideview
