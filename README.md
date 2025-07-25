@@ -85,7 +85,7 @@ manim122/
 Navigate to any precept folder and run:
 
 ```bash
-uv run manim main.py PC{Precept No.} -pql
+manim main.py PC{Precept No.} -pql
 ```
 
 e.g `PC05` for the fifth precept
@@ -93,7 +93,7 @@ e.g `PC05` for the fifth precept
 For slides:
 
 ```bash
-uv run manim-slides PC{Precept No.} main.py
+manim-slides PC{Precept No.} main.py
 ```
 
 ### Using Manim Sideview
@@ -103,7 +103,6 @@ With the extension properly configured:
 1. Open any `.py` file with Manim scenes
 2. Right-click in the editor
 3. Select "Manim Sideview: Show preview"
-4. The preview will use your virtual environment and have access to `manim122lib`
 
 ## Troubleshooting
 
