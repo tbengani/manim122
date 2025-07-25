@@ -3,13 +3,12 @@ from manim122lib import *
 
 class PC13(Scene):
   def construct(self):
-    b1 = BinaryTreeNode(1)
-    b1.shift(LEFT)
+    mh = MinHeap([1,2,3,4,5,6,7])
+    mh.move_to(ORIGIN)
 
-    b2 = BinaryTreeNode(2)
-    b2.shift(RIGHT)
 
-    self.play(Write(b1), Write(b2))
+    self.play(Write(mh))
     self.wait(1)
-    BinaryTreeNode.swap_positions(self, b1, b2)
+
+    mh.insert(self, 3)
     self.wait(1)
