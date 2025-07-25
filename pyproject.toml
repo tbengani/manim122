@@ -5,6 +5,7 @@ description = "Collection of manim library and source files for 15-122"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "ipython>=8.37.0",
     "manim>=0.19.0",
     "manim-slides>=5.5.1",
     "manim122lib",
