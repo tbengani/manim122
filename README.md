@@ -82,19 +82,15 @@ manim122/
 
 ## Usage
 
-Navigate to any precept folder and run:
+Run the following command inside a precept folder:
 
 ```bash
-manim main.py PC{Precept No.} -pql
+manim-slides convert PC{Precept No.} main.py index.html
 ```
 
-e.g `PC05` for the fifth precept
+e.g PC05 for the fifth precept
 
-For slides:
-
-```bash
-manim-slides PC{Precept No.} main.py
-```
+Then wait for the GitHub pages deployment to finish and navigate to tbengani.github.io/manim122/pc{Precept No.}
 
 ### Using Manim Sideview
 
