@@ -17,8 +17,13 @@ class BinaryTreeConfig:
 default_config = BinaryTreeConfig()
 
 class BinaryTreeNode(VGroup):
-    def __init__(self, data : int = 0, left: "BinaryTreeNode" =None , right: "BinaryTreeNode" =None , cfg : BinaryTreeConfig = default_config):
+    def __init__(self, scene : Scene = None, data : int = 0, left: "BinaryTreeNode" =None , right: "BinaryTreeNode" =None , cfg : BinaryTreeConfig = default_config):
         super().__init__()
+
+        if scene is None:
+          raise ValueError("Please pass in the scene to BinaryTreeNode")
+        self.scene = scene
+
         self.data = data
         self.left = left
         self.right = right
@@ -34,13 +39,13 @@ class BinaryTreeNode(VGroup):
         self.add(node)  # this makes BinaryTreeNode a full Mobject
 
     @staticmethod
-    def swap_positions(scene: Scene, node_a: "BinaryTreeNode", node_b: "BinaryTreeNode", duration=0.5):
-      pos_a = node_a.get_center()
-      pos_b = node_b.get_center()
+    def swap_with(node: "BinaryTreeNode", duration=0.5):
+      pos_a = self.get_center()
+      pos_b = node.get_center()
 
-      scene.play(
-          node_a.animate.move_to(pos_b),
-          node_b.animate.move_to(pos_a),
+      self.scene.play(
+          self.animate.move_to(pos_b),
+          node.animate.move_to(pos_a),
           run_time=duration
       )
 
@@ -49,67 +54,35 @@ class BinaryTreeNode(VGroup):
         return f"BinaryTreeNode({self.data})"
 
 class MinHeap(VGroup):
-  def __init__(self, data: Union[np.ndarray, list[int]] = None, limit: int = 4, cfg : BinaryTreeConfig = default_config):
+  def __init__(self, scene : Scene = None, data: Union[np.ndarray, list[int], list[BinaryTreeNode]] = None, limit: int = 15, cfg : BinaryTreeConfig = default_config):
     super().__init__()
+
+    if scene is None:
+      raise ValueError("Please pass in the scene to MinHeap")
+    self.scene = scene
+
     if data is None:
       data = []
     if isinstance(data, np.ndarray):
       data = data.tolist()
 
-    self.nodes = []
-    self.limit = limit
+    self.nodes = [] # internal representation of nodes
+    self.limit = limit # max number of nodes
+    self.len = 0 # current number of nodes
+    self.max_levels = int(np.floor(np.log2(limit))) + 1
+
     self.cfg = cfg
 
     for value in data:
       self._add_node(value)
 
-    self._arrange_heap()
-
   def _add_node(self, value: int):
+    self.len += 1
+    if (self.len > self.limit):
+      raise ValueError("Too many nodes in MinHeap (limit={self.limit}, current={self.len})")
     node = BinaryTreeNode(value, cfg=self.cfg)
     self.nodes.append(node)
     self.add(node)
 
-  def _arrange_heap(self):
-    self.submobjects.clear()
-    positions = {}
-    edges = VGroup()
-
-    def layout(index: int, depth: int, x_min: float, x_max: float):
-      if index >= len(self.nodes):
-        return
-      x = (x_min + x_max) / 2
-      y = -depth * self.cfg.level_height
-      positions[index] = np.array([x, y, 0])
-
-      left_idx = 2 * index + 1
-      right_idx = 2 * index + 2
-
-      # Recurse into children with subdivided ranges
-      layout(left_idx, depth + 1, x_min, x)
-      layout(right_idx, depth + 1, x, x_max)
-
-    # Use spacing to set total horizontal width based on tree depth
-    max_width = (2 ** (self.limit - 1)) * self.cfg.h_spacing
-    layout(0, 0, -max_width / 2, max_width / 2)
-
-    for i, node in enumerate(self.nodes):
-      node.move_to(positions[i])
-      if i != 0:
-        parent_idx = (i - 1) // 2
-        edge = Line(positions[parent_idx], positions[i], color=GRAY)
-        edges.add(edge)
-
-    self.add(edges, *self.nodes)
-
   def __repr__(self):
-    return f"Heap({[n.data for n in self.nodes]})"
-
-  def insert(self, scene: Scene, value: int, duration: float = 0.5):
-    """Insert value into the heap visually."""
-    center = self.get_center()
-    self._add_node(value)
-    self._arrange_heap()
-
-    self.move_to(center)
-    scene.wait(duration)
+    return f"MinHeap({[str(node) for node in self.nodes]})"
