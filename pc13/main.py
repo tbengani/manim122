@@ -31,27 +31,28 @@ class PC13(Slide):
     self.wait()
 
     # Adding a node works the same way
+    self.next_slide()
     heap.add_node(6, self)
-    self.wait(1)
+    self.next_slide()
     heap.add_node(3, self)
 
-    self.wait(2)
+    self.next_slide()
 
 
-# swap_code_string = """
-# void swap_up(heap* H, int child)
-# //@requires is_heap_safe(H);
-# //@requires 2 <= child && child < H->next;
-# //@requires !ok_above(H, child/2, child); // parent == child/2
-# //@ensures ok_above(H, child/2, child);
-# {
-# int parent = child/2;
-# elem tmp = H->data[child];
-# H->data[child] = H->data[parent];
-# H->data[parent] = tmp;
-# }
-# """
-# swap_code = Code(
-#                   code_string=swap_code_string,
-#                   )
-# self.add(swap_code)
+    swap_code_string = """
+    void swap_up(heap* H, int child)
+    //@requires is_heap_safe(H);
+    //@requires 2 <= child && child < H->next;
+    //@requires !ok_above(H, child/2, child); // parent == child/2
+    //@ensures ok_above(H, child/2, child);
+    {
+    int parent = child/2;
+    elem tmp = H->data[child];
+    H->data[child] = H->data[parent];
+    H->data[parent] = tmp;
+    }
+    """
+    swap_code = Code(
+                      code_string=swap_code_string,
+                      )
+    self.add(swap_code)
