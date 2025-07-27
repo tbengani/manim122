@@ -1,6 +1,10 @@
 from manim import *
-from typing import Union
+from typing import Union, TYPE_CHECKING
 from dataclasses import dataclass
+
+# Forward reference for type hinting in Edge class
+if TYPE_CHECKING:
+    from __main__ import MinHeap
 
 # Configuration for the visual properties of the heap
 @dataclass
@@ -14,8 +18,9 @@ class BinaryTreeConfig:
     font_size: float = 24
     h_spacing: float = 1.5
     level_height: float = 1.5
-    edge_color: str = GRAY
-    edge_width: float = 2.0
+    edge_color: str = WHITE
+    edge_width: float = 3.0
+    edge_z_index: int = -1 # z_index to ensure edges are drawn behind nodes
 
 default_config = BinaryTreeConfig()
 
@@ -52,11 +57,28 @@ class BinaryTreeNode(VGroup):
         return f"BinaryTreeNode({self.data})"
 
 class Edge(Line):
-    """A styled line to connect two nodes."""
-    def __init__(self, start_node: BinaryTreeNode, end_node: BinaryTreeNode, cfg: BinaryTreeConfig = default_config):
-        super().__init__(start_node.get_center(), end_node.get_center(), color=cfg.edge_color, stroke_width=cfg.edge_width)
-        # This updater ensures the edge sticks to the nodes if they move
-        self.add_updater(lambda m: m.put_start_and_end_on(start_node.get_center(), end_node.get_center()))
+    """
+    A styled line that connects two structural positions in the heap.
+    It is anchored to the coordinates defined by node indices, not the
+    node mobjects themselves, making it stationary during swaps.
+    """
+    def __init__(self, heap: "MinHeap", child_idx: int, cfg: BinaryTreeConfig = default_config):
+        # Calculate the parent index from the child index
+        parent_idx = child_idx // 2
+
+        # Get the fixed (x, y, z) coordinates for the parent and child positions
+        start_pos = heap._get_pos(parent_idx)
+        end_pos = heap._get_pos(child_idx)
+
+        # Create a simple Line between these two fixed points
+        super().__init__(
+            start=start_pos,
+            end=end_pos,
+            color=cfg.edge_color,
+            stroke_width=cfg.edge_width,
+            z_index=cfg.edge_z_index
+        )
+
 
 class MinHeap(VGroup):
     """
@@ -131,8 +153,7 @@ class MinHeap(VGroup):
         # Recreate edges
         self.edges.remove(*self.edges)
         for i in range(2, self.len + 1):
-            parent_idx = i // 2
-            edge = Edge(self.nodes[parent_idx], self.nodes[i], self.cfg)
+            edge = Edge(self, i, self.cfg) # Use the new, smarter Edge
             self.edges.add(edge)
 
     def add_node(self, value: int, scene: Scene):
@@ -145,8 +166,7 @@ class MinHeap(VGroup):
 
         # 2. Create the edge connecting to its parent
         if self.len > 1:
-            parent_idx = self.len // 2
-            edge = Edge(self.nodes[parent_idx], new_node, self.cfg)
+            edge = Edge(self, self.len, self.cfg) # Use the new, smarter Edge
             self.edges.add(edge)
             scene.play(Create(edge), run_time=0.5)
 
@@ -159,7 +179,6 @@ class MinHeap(VGroup):
     def _heapify_up(self, scene: Scene, start_idx: int):
         """Animates the bubble-up process for a newly added node."""
         current_idx = start_idx
-        animations = []
 
         while current_idx > 1:
             parent_idx = current_idx // 2
@@ -206,7 +225,7 @@ class MinHeap(VGroup):
             node2.animate.move_to(node1.get_center()),
             run_time=duration
         )
-        # Swap them in the internal list to maintain logical correctness
+        # Swap them in the internal list. The edge updaters will handle the rest automatically.
         self.nodes[idx1], self.nodes[idx2] = self.nodes[idx2], self.nodes[idx1]
 
     def __repr__(self):
