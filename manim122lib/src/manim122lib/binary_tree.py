@@ -21,8 +21,8 @@ class BinaryTreeConfig:
     # --- Tree Structure Properties ---
     h_spacing: float = 1.5
     level_height: float = 1.5
-    edge_color: str = GRAY
-    edge_width: float = 2.0
+    edge_color: str = WHITE
+    edge_width: float = 3.0
     edge_z_index: int = -1
 
     # --- Highlight Properties ---
@@ -39,7 +39,7 @@ class BinaryTreeConfig:
     array_font_size: float = 24
     array_cell_size: float = 0.8
     array_cell_spacing: float = 0.1
-    array_empty_stroke_color: str = GRAY
+    array_empty_stroke_color: str = DARK_GRAY
     array_empty_stroke_dashed: bool = True
 
     # --- Animation Durations ---
@@ -119,7 +119,7 @@ class HeapArray(VGroup):
             self.cells.append(cell_group)
 
         self.add(*self.cells)
-        # FIX: Arrange cells first (which centers the group at ORIGIN), then move to final position.
+
         self._arrange_cells()
         self.move_to(position)
 
@@ -160,10 +160,8 @@ class HeapArray(VGroup):
         ).move_to(old_shape.get_center())
 
         new_label = Text(str(value), font=self.cfg.font, font_size=self.cfg.array_font_size, color=self.cfg.array_text_color).move_to(new_shape.get_center())
-        # FIX: Set a higher z_index for the label to ensure it's drawn on top of the cell shape.
         new_label.set_z_index(new_shape.z_index + 1)
 
-        # Update the VGroup structure with the new Mobjects
         cell_group[0] = new_shape
         cell_group[2] = new_label
 
@@ -182,13 +180,12 @@ class HeapArray(VGroup):
             label2.animate.move_to(cell1_group[0].get_center())
         )
 
-        # Swap the mobjects in the list structure so they are correctly referenced later
         cell1_group[2], cell2_group[2] = cell2_group[2], cell1_group[2]
         return swap_animation
 
 class MinHeap(VGroup):
     """A VGroup that manages and animates a Min-Heap data structure."""
-    def __init__(self, data: Union[list[int], None] = None, limit: int = 15, top_pos: np.ndarray = UP * 3, array_pos: np.ndarray = DOWN*2.5, cfg: BinaryTreeConfig = default_config, scene: Scene = None):
+    def __init__(self, data: Union[list[int], None] = None, limit: int = 15, root_pos: np.ndarray = UP * 3, array_pos: np.ndarray = DOWN*2.5, cfg: BinaryTreeConfig = default_config, scene: Scene = None):
         super().__init__()
         if data is None: data = []
         self.nodes: List[Optional[BinaryTreeNode]] = [None]
@@ -196,7 +193,7 @@ class MinHeap(VGroup):
         self.limit = limit
         self.len = 0
         self.max_levels = int(np.floor(np.log2(limit))) + 1 if limit > 0 else 0
-        self.top_pos = top_pos
+        self.root_pos = root_pos
         self.cfg = cfg
 
         self.array_vis = HeapArray(self, position=array_pos, cfg=cfg)
@@ -216,11 +213,11 @@ class MinHeap(VGroup):
     def _get_pos(self, index: int) -> np.ndarray:
         if not (1 <= index <= self.limit): raise IndexError("Node index out of range.")
         level = int(np.floor(np.log2(index)))
-        y_pos = self.top_pos[1] - level * self.cfg.level_height
+        y_pos = self.root_pos[1] - level * self.cfg.level_height
         index_in_level = index - 2**level
         spacing_at_level = self.cfg.h_spacing * (2**(self.max_levels - 1 - level))
         num_slots_in_level = 2**level
-        x_pos = self.top_pos[0] + (index_in_level - (num_slots_in_level - 1) / 2) * spacing_at_level
+        x_pos = self.root_pos[0] + (index_in_level - (num_slots_in_level - 1) / 2) * spacing_at_level
         return np.array([x_pos, y_pos, 0])
 
     def _add_node_internal(self, value: int) -> BinaryTreeNode:
@@ -292,7 +289,6 @@ class MinHeap(VGroup):
         scene.play(node_swap_anim, array_swap_anim, run_time=duration)
         self.nodes[idx1], self.nodes[idx2] = self.nodes[idx2], self.nodes[idx1]
 
-    # NEW: Method to translate the array with a smooth animation
     def translate_array_animated(self, scene: Scene, target_position: np.ndarray, duration: float = 1.0):
         """Animates the translation of the array to a new target position."""
         scene.play(self.array_vis.animate.move_to(target_position), run_time=duration)

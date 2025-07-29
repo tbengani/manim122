@@ -85,7 +85,8 @@ manim122/
 Run the following command inside a precept folder:
 
 ```bash
-manim-slides convert PC{Precept No.} main.py index.html
+manim-slides render main.py
+manim-slides convert PC{Precept No.} index.html
 ```
 
 e.g PC05 for the fifth precept
