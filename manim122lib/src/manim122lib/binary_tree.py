@@ -42,6 +42,9 @@ class BinaryTreeConfig:
     array_empty_stroke_color: str = DARK_GRAY
     array_empty_stroke_dashed: bool = True
 
+    # --- Index Label Properties ---
+    index_text_color: str = ORANGE
+
     # --- Animation Durations ---
     initial_create_duration: float = 0.4
     initial_edge_duration: float = 0.3
@@ -52,6 +55,10 @@ class BinaryTreeConfig:
     insert_heapify_swap_duration: float = 0.7
     insert_reposition_duration: float = 0.7
     highlight_duration: float = 0.3
+    remove_swap_duration: float = 0.7
+    remove_fade_duration: float = 0.5
+    label_fade_duration: float = 0.5
+
 
 default_config = BinaryTreeConfig()
 
@@ -112,14 +119,14 @@ class HeapArray(VGroup):
         self.cfg = cfg
         # Structure of each item in self.cells: VGroup(cell_shape, index_label, data_label)
         self.cells: List[VGroup] = []
+        # Store original colors for unhighlighting
+        self.original_cell_styles = {}
 
-        # Create all cells from 0 to limit at initialization
         for i in range(self.heap.limit + 1):
             cell_group = self._create_null_cell() if i == 0 else self._create_empty_cell(i)
             self.cells.append(cell_group)
 
         self.add(*self.cells)
-
         self._arrange_cells()
         self.move_to(position)
 
@@ -129,12 +136,12 @@ class HeapArray(VGroup):
     def _arrange_cells(self):
         for i, cell_group in enumerate(self.cells):
             cell_group.move_to(self._get_cell_pos(i))
-        self.center() # Center the entire group of cells
+        self.center()
 
     def _create_null_cell(self) -> VGroup:
         cell = Square(side_length=self.cfg.array_cell_size, color=GRAY, fill_color=BLACK, fill_opacity=0.2)
         index = Text("0", font=self.cfg.font, font_size=self.cfg.array_font_size * 0.5, color=GRAY).next_to(cell, DOWN, buff=0.15)
-        label = VGroup() # Blank placeholder for data
+        label = VGroup()
         return VGroup(cell, index, label)
 
     def _create_empty_cell(self, index: int) -> VGroup:
@@ -142,46 +149,73 @@ class HeapArray(VGroup):
         if self.cfg.array_empty_stroke_dashed:
             cell_shape = DashedVMobject(cell_shape, num_dashes=12, dashed_ratio=0.6)
         cell_shape.set_style(stroke_color=self.cfg.array_empty_stroke_color)
-
         index_label = Text(str(index), font=self.cfg.font, font_size=self.cfg.array_font_size * 0.5, color=GRAY).next_to(cell_shape, DOWN, buff=0.15)
-        data_label = VGroup() # Blank placeholder for data
+        data_label = VGroup()
         return VGroup(cell_shape, index_label, data_label).move_to(self._get_cell_pos(index))
 
     def fill_cell_animated(self, index: int, value: int):
-        """Returns an animation for filling an empty cell with a value."""
         if not (1 <= index < len(self.cells)): return AnimationGroup()
-
         cell_group = self.cells[index]
         old_shape = cell_group[0]
-
         new_shape = Square(side_length=self.cfg.array_cell_size).set_style(
             fill_color=self.cfg.array_fill_color, fill_opacity=1,
             stroke_color=self.cfg.array_stroke_color, stroke_width=self.cfg.array_stroke_width
         ).move_to(old_shape.get_center())
-
         new_label = Text(str(value), font=self.cfg.font, font_size=self.cfg.array_font_size, color=self.cfg.array_text_color).move_to(new_shape.get_center())
         new_label.set_z_index(new_shape.z_index + 1)
-
+        self.original_cell_styles[index] = {
+            "fill_color": new_shape.get_fill_color(), "stroke_color": new_shape.get_stroke_color(),
+            "stroke_width": new_shape.get_stroke_width(), "text_color": new_label.get_color()
+        }
         cell_group[0] = new_shape
         cell_group[2] = new_label
-
         return AnimationGroup(FadeTransform(old_shape, new_shape), Create(new_label))
 
-    def swap_cells_animated(self, idx1: int, idx2: int):
-        """Returns an animation for swapping the data labels of two cells."""
-        if not (1 <= idx1 < len(self.cells) and 1 <= idx2 < len(self.cells)): return AnimationGroup()
+    def empty_cell_animated(self, index: int):
+        if not (1 <= index < len(self.cells)): return AnimationGroup()
+        cell_group = self.cells[index]
+        old_shape, old_label = cell_group[0], cell_group[2]
+        new_group = self._create_empty_cell(index).move_to(cell_group.get_center())
+        self.cells[index] = new_group
+        self.original_cell_styles.pop(index, None)
+        return AnimationGroup(FadeTransform(old_shape, new_group[0]), FadeOut(old_label))
 
+    def swap_cells_animated(self, idx1: int, idx2: int):
+        if not (1 <= idx1 < len(self.cells) and 1 <= idx2 < len(self.cells)): return AnimationGroup()
         cell1_group, cell2_group = self.cells[idx1], self.cells[idx2]
         if len(cell1_group) < 3 or len(cell2_group) < 3: return AnimationGroup()
         label1, label2 = cell1_group[2], cell2_group[2]
-
         swap_animation = AnimationGroup(
             label1.animate.move_to(cell2_group[0].get_center()),
             label2.animate.move_to(cell1_group[0].get_center())
         )
-
         cell1_group[2], cell2_group[2] = cell2_group[2], cell1_group[2]
         return swap_animation
+
+    def highlight_cell_animated(self, index: int, **kwargs):
+        if not (1 <= index < len(self.cells)) or index not in self.original_cell_styles: return AnimationGroup()
+        cell_group = self.cells[index]
+        cell_shape, cell_label = cell_group[0], cell_group[2]
+        sc = kwargs.get("stroke_color", self.cfg.highlight_stroke_color)
+        sw = kwargs.get("stroke_width", self.cfg.highlight_stroke_width)
+        fc = kwargs.get("fill_color", self.cfg.highlight_fill_color)
+        tc = kwargs.get("text_color", self.cfg.highlight_text_color)
+        return AnimationGroup(
+            cell_shape.animate.set_stroke(color=sc, width=sw),
+            cell_shape.animate.set_fill(color=fc, opacity=1),
+            cell_label.animate.set_color(tc)
+        )
+
+    def unhighlight_cell_animated(self, index: int):
+        if not (1 <= index < len(self.cells)) or index not in self.original_cell_styles: return AnimationGroup()
+        cell_group = self.cells[index]
+        cell_shape, cell_label = cell_group[0], cell_group[2]
+        original = self.original_cell_styles[index]
+        return AnimationGroup(
+            cell_shape.animate.set_stroke(color=original["stroke_color"], width=original["stroke_width"]),
+            cell_shape.animate.set_fill(color=original["fill_color"], opacity=1),
+            cell_label.animate.set_color(original["text_color"])
+        )
 
 class MinHeap(VGroup):
     """A VGroup that manages and animates a Min-Heap data structure."""
@@ -190,21 +224,21 @@ class MinHeap(VGroup):
         if data is None: data = []
         self.nodes: List[Optional[BinaryTreeNode]] = [None]
         self.edges = VGroup()
+        self.index_labels = VGroup() # To hold the index labels
         self.limit = limit
         self.len = 0
         self.max_levels = int(np.floor(np.log2(limit))) + 1 if limit > 0 else 0
         self.root_pos = root_pos
         self.cfg = cfg
-
         self.array_vis = HeapArray(self, position=array_pos, cfg=cfg)
-        self.add(self.edges, self.array_vis)
+        self.add(self.edges, self.array_vis, self.index_labels)
 
         if scene:
             scene.add(self)
             for value in data:
                 self._add_and_heapify_animated(scene, value, is_initial_build=True)
             self._reposition_all_nodes(scene, duration=self.cfg.initial_reposition_duration)
-        else: # Non-animated setup
+        else:
             for value in data:
                 self._add_node_internal(value)
                 self._heapify_up_internal()
@@ -228,23 +262,20 @@ class MinHeap(VGroup):
         self.add(node)
         return node
 
-    def _add_and_heapify_animated(self, scene: Scene, value: int, is_initial_build: bool):
-        """Animates adding a node and filling the corresponding array cell."""
+    def _add_and_heapify_animated(self, scene: Scene, value: int, is_initial_build: bool, is_slide : bool = False):
         create_dur = self.cfg.initial_create_duration if is_initial_build else self.cfg.insert_create_duration
         edge_dur = self.cfg.initial_edge_duration if is_initial_build else self.cfg.insert_edge_duration
         swap_dur = self.cfg.initial_heapify_swap_duration if is_initial_build else self.cfg.insert_heapify_swap_duration
-
         new_node = self._add_node_internal(value)
         new_node.move_to(self._get_pos(self.len))
-
         array_fill_anim = self.array_vis.fill_cell_animated(self.len, value)
         scene.play(Create(new_node), array_fill_anim, run_time=create_dur)
-
         if self.len > 1:
             edge = Edge(self, self.len, self.cfg)
             self.edges.add(edge)
             scene.play(Create(edge), run_time=edge_dur)
-
+        if (is_slide):
+          scene.next_slide()
         self._heapify_up(scene, self.len, swap_duration=swap_dur)
 
     def _heapify_up_internal(self):
@@ -259,8 +290,45 @@ class MinHeap(VGroup):
         self.edges.remove(*self.edges)
         for i in range(2, self.len + 1): self.edges.add(Edge(self, i, self.cfg))
 
-    def add_node(self, value: int, scene: Scene):
-        self._add_and_heapify_animated(scene, value, is_initial_build=False)
+    def add_node(self, value: int, scene: Scene, is_slide = False):
+        self._add_and_heapify_animated(scene, value, is_initial_build=False, is_slide=is_slide)
+        self._reposition_all_nodes(scene, duration=self.cfg.insert_reposition_duration)
+
+    def remove_node(self, index: int, scene: Scene):
+        """Removes a node at a specific index from the heap."""
+        if not (1 <= index <= self.len):
+            msg = Text("Heap is empty!" if self.len == 0 else f"Index {index} is out of bounds.").to_edge(UP)
+            scene.play(Write(msg))
+            scene.wait(1)
+            scene.play(Unwrite(msg))
+            return
+
+        idx_to_remove = index
+        last_idx = self.len
+
+        if idx_to_remove != last_idx:
+            self.swap_nodes(scene, idx_to_remove, last_idx, duration=self.cfg.remove_swap_duration)
+
+        node_to_remove = self.nodes.pop(last_idx)
+        self.len -= 1
+
+        anims = [FadeOut(node_to_remove), self.array_vis.empty_cell_animated(last_idx)]
+        if self.len > 0:
+            edge_to_remove = None
+            for edge in self.edges:
+                end_pos = self._get_pos(last_idx)
+                if np.allclose(edge.get_end(), end_pos):
+                    edge_to_remove = edge
+                    break
+            if edge_to_remove:
+                self.edges.remove(edge_to_remove)
+                anims.append(FadeOut(edge_to_remove))
+
+        scene.play(*anims, run_time=self.cfg.remove_fade_duration)
+
+        if self.len > 0 and idx_to_remove <= self.len:
+            self._heapify_down(scene, idx_to_remove, swap_duration=self.cfg.remove_swap_duration)
+
         self._reposition_all_nodes(scene, duration=self.cfg.insert_reposition_duration)
 
     def _heapify_up(self, scene: Scene, start_idx: int, swap_duration: float):
@@ -268,13 +336,81 @@ class MinHeap(VGroup):
         while current_idx > 1:
             parent_idx = current_idx // 2
             current_node, parent_node = self.nodes[current_idx], self.nodes[parent_idx]
-            scene.play(current_node.get_highlight_anim(), parent_node.get_highlight_anim(), run_time=self.cfg.highlight_duration)
+
+            anims_highlight = [
+                current_node.get_highlight_anim(),
+                parent_node.get_highlight_anim(),
+                self.array_vis.highlight_cell_animated(current_idx),
+                self.array_vis.highlight_cell_animated(parent_idx)
+            ]
+            scene.play(*anims_highlight, run_time=self.cfg.highlight_duration)
+            scene.wait(0.2)
+
+            anims_unhighlight = [
+                current_node.get_unhighlight_anim(),
+                parent_node.get_unhighlight_anim(),
+                self.array_vis.unhighlight_cell_animated(current_idx),
+                self.array_vis.unhighlight_cell_animated(parent_idx)
+            ]
+
             if current_node.data < parent_node.data:
-                scene.play(current_node.get_unhighlight_anim(), parent_node.get_unhighlight_anim(), run_time=self.cfg.highlight_duration)
+                scene.play(*anims_unhighlight, run_time=self.cfg.highlight_duration)
                 self.swap_nodes(scene, current_idx, parent_idx, duration=swap_duration)
                 current_idx = parent_idx
             else:
-                scene.play(current_node.get_unhighlight_anim(), parent_node.get_unhighlight_anim(), run_time=self.cfg.highlight_duration)
+                scene.play(*anims_unhighlight, run_time=self.cfg.highlight_duration)
+                break
+
+    def _heapify_down(self, scene: Scene, start_idx: int, swap_duration: float):
+        current_idx = start_idx
+        while True:
+            left_child_idx = 2 * current_idx
+            right_child_idx = 2 * current_idx + 1
+            smallest_idx = current_idx
+
+            anims_highlight = [
+                self.nodes[current_idx].get_highlight_anim(),
+                self.array_vis.highlight_cell_animated(current_idx)
+            ]
+            if left_child_idx <= self.len:
+                anims_highlight.extend([
+                    self.nodes[left_child_idx].get_highlight_anim(),
+                    self.array_vis.highlight_cell_animated(left_child_idx)
+                ])
+            if right_child_idx <= self.len:
+                anims_highlight.extend([
+                    self.nodes[right_child_idx].get_highlight_anim(),
+                    self.array_vis.highlight_cell_animated(right_child_idx)
+                ])
+
+            scene.play(*anims_highlight, run_time=self.cfg.highlight_duration)
+            scene.wait(0.3)
+
+            if left_child_idx <= self.len and self.nodes[left_child_idx].data < self.nodes[smallest_idx].data:
+                smallest_idx = left_child_idx
+            if right_child_idx <= self.len and self.nodes[right_child_idx].data < self.nodes[smallest_idx].data:
+                smallest_idx = right_child_idx
+
+            anims_unhighlight = [
+                self.nodes[current_idx].get_unhighlight_anim(),
+                self.array_vis.unhighlight_cell_animated(current_idx)
+            ]
+            if left_child_idx <= self.len:
+                anims_unhighlight.extend([
+                    self.nodes[left_child_idx].get_unhighlight_anim(),
+                    self.array_vis.unhighlight_cell_animated(left_child_idx)
+                ])
+            if right_child_idx <= self.len:
+                anims_unhighlight.extend([
+                    self.nodes[right_child_idx].get_unhighlight_anim(),
+                    self.array_vis.unhighlight_cell_animated(right_child_idx)
+                ])
+            scene.play(*anims_unhighlight, run_time=self.cfg.highlight_duration)
+
+            if smallest_idx != current_idx:
+                self.swap_nodes(scene, current_idx, smallest_idx, duration=swap_duration)
+                current_idx = smallest_idx
+            else:
                 break
 
     def _reposition_all_nodes(self, scene: Scene, duration: float):
@@ -290,8 +426,28 @@ class MinHeap(VGroup):
         self.nodes[idx1], self.nodes[idx2] = self.nodes[idx2], self.nodes[idx1]
 
     def translate_array_animated(self, scene: Scene, target_position: np.ndarray, duration: float = 1.0):
-        """Animates the translation of the array to a new target position."""
         scene.play(self.array_vis.animate.move_to(target_position), run_time=duration)
+
+    def show_indices(self, scene: Scene, binary: bool = False):
+        """Fades in the array index above each node."""
+        self.hide_indices(scene, duration=0.05) # Clear existing before showing new ones
+
+        anims = []
+        for i in range(1, self.len + 1):
+            node = self.nodes[i]
+            label_text = bin(i)[2:] if binary else str(i)
+
+            index_label = Text(
+                label_text,
+                font=self.cfg.font,
+                font_size=self.cfg.font_size,
+                color=self.cfg.index_text_color
+            ).next_to(node, UP, buff=0.2)
+
+            self.index_labels.add(index_label)
+            anims.append(FadeIn(index_label))
+
+        scene.play(*anims, run_time=self.cfg.label_fade_duration)
 
     def highlight_node(self, index: int, scene: Scene, **kwargs):
         if not (1 <= index <= self.len): return
@@ -300,6 +456,18 @@ class MinHeap(VGroup):
     def unhighlight_node(self, index: int, scene: Scene):
         if not (1 <= index <= self.len): return
         scene.play(self.nodes[index].get_unhighlight_anim(), run_time=self.cfg.highlight_duration)
+
+    def hide_indices(self, scene: Scene, duration: Optional[float] = None):
+        """Fades out the array index labels."""
+        if not self.index_labels:
+            return
+
+        fade_duration = duration if duration is not None else self.cfg.label_fade_duration
+
+        anims = [FadeOut(label) for label in self.index_labels]
+        scene.play(*anims, run_time=fade_duration)
+        self.index_labels.remove(*self.index_labels)
+
 
     def __repr__(self):
         return f"MinHeap({[node.data for node in self.nodes[1:]]})"

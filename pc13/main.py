@@ -1,6 +1,7 @@
 from manim import *
 from manim_slides import Slide
 from manim122lib import *
+import textwrap
 
 class PQ(VMobject):
   def __init__(self, data=None, scene=None):
@@ -9,26 +10,36 @@ class PQ(VMobject):
 
 
 class PC13(Slide):
-  def intro_slide(self, title):
-    scale=0.3
-    chonks = [Chonk(scale), Chonk(scale), Chonk(scale), Chonk(scale)]
-    chonks[1].scale([-1, 1, 1])
-    chonks[3].scale([-1, 1, 1])
-    chonks[0].to_corner(UL, buff=0.2)
-    chonks[1].to_corner(UR, buff=0.2)
-    chonks[2].to_corner(DL, buff=0.2)
-    chonks[3].to_corner(DR, buff=0.2)
+  def announcements_slide(self, title):
+        points = [
+        "Final review session: Saturday 4/26\n from 12pm to 3pm in NSH 1305",
+        "Final exam (see Ed for room assignments):\n Monday April 28th from 1pm to 4pm",
+        "Prog 11 (c0vm checkpoint) due TODAY!",
+        "QOTD: What's the most cursed way to \nimplement a stack?",
+        ]
+        bullets = VGroup(*[
+            Text(f"• {point}", font="JetBrains Mono")
+            for point in points
+        ]).arrange(DOWN, aligned_edge=LEFT)
 
-    self.next_slide(loop=True)
-    self.play(*[chonk.spin(self, 4, 0.5) for chonk in chonks])
-    self.wait(0.5)
-    self.next_slide()
-    self.play(*[FadeOut(chonk) for chonk in chonks])
+        bullets.scale(0.7)
+        self.play(Write(bullets, run_time=3))
+
+        chonk = Chonk(0.25)
+        chonk.next_to(bullets, DOWN).align_to(bullets, LEFT)
+        chonk_honking = Text("Final Precept :(", font="JetBrains Mono", color=ORANGE, font_size=DEFAULT_FONT_SIZE * 0.7).next_to(chonk, RIGHT)
+        self.play(FadeIn(chonk), FadeIn(chonk_honking))
+
+        self.next_slide()
+        self.play(FadeOut(bullets), FadeOut(chonk_honking))
+        self.play(chonk.animate.shift(LEFT * 3), run_time=1)
+        self.remove(chonk)
 
   def pq_slide(self, title):
     abstract_text = Text("This is an abstract priority queue", font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.5).next_to(title, DOWN, buff=0.5).to_edge(LEFT, buff=0.5)
     note1_text = Text("Note 1: Lower keys have higher priority in this example", font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.3).to_corner(DL, buff=0.7)
-    note2_text = Text("Note 2: We added ints here, but we can use a generic elem type with a priority comparision function for genericity", font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.3).next_to(note1_text, DOWN).align_to(note1_text, LEFT)
+    note2_text = Text("**Note 2: We added ints here, but we can use a generic elem type with a priority comparision function for genericity", font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.3).next_to(note1_text, DOWN).align_to(note1_text, LEFT)
+    note2_text[0:2].set_color(ORANGE)
     self.play(Write(abstract_text), Write(note1_text))
     language="c"
     pq = PriorityQueue([15, 16, 19, 57], self)
@@ -46,7 +57,7 @@ class PC13(Slide):
     pq_rem_code = Code(code_string="pq_rem(pq);", language=language, add_line_numbers=False).next_to(abstract_text, DOWN)
     pq_rem_code.move_to([0, pq_rem_code.get_center()[1], 0])
     self.play(Transform(pq_add_code, pq_rem_code))
-    removed_val = pq.pq_rem(self, hang_duration=1.5)
+    removed_val = pq.pq_rem(self, hang_duration=0.5)
     self.next_slide()
     self.play(FadeOut(pq_add_code))
     pq.shift_to(self, pq.get_center() + UP)
@@ -56,8 +67,6 @@ class PC13(Slide):
     table.next_to(implementation_text, DOWN, buff=0.25)
     table.move_to([0, table.get_center()[1], 0])
     self.play(FadeIn(table, lag_ratio=0.05))
-    self.wait()
-    self.next_slide()
     self.play(animate_heap_row_color(table_mobjs))
     self.next_slide()
     self.play(FadeOut(abstract_text),
@@ -74,31 +83,78 @@ class PC13(Slide):
         font_size = 18,
         h_spacing=1,
         level_height=1,
-        insert_create_duration= 0.7,
-        insert_edge_duration= 0.5,
-        insert_heapify_swap_duration= 0.7,
-        insert_reposition_duration= 0.7,
+        initial_create_duration= 0.1,
+        initial_edge_duration= 0.1,
+        initial_heapify_swap_duration= 0.1,
+        initial_reposition_duration= 0.1,
         array_font_size=18,
     )
 
     heap = MinHeap(
-        data=[3, 15, 122],
+        data=[3, 15, 122, 21, 33],
         limit=13,
         scene=self,
         cfg=custom_cfg,
         root_pos=UP * 2 + RIGHT * 3,
         array_pos=DOWN * 2.5
     )
-    self.wait()
+
+
+
+
+    note_text = Text("Note: the ORANGE nodes/cells represent elements being compared", font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.3).to_corner(DL, buff=0.7).shift(DOWN * 0.2)
+    note_text[8:14].set_color(ORANGE)
+    heap_text1 = get_heap_text("Heaps have two important invariants: the shape invariant and the ordering invariant. Every operation we do must maintain these invariants. ").next_to(title, DOWN).to_edge(LEFT)
+    self.play(Write(heap_text1), Write(note_text))
+    self.next_slide()
+
+    shape_i_text = get_heap_text("Shape Invariant: complete binary tree (except maybe last level)").next_to(heap_text1, DOWN).to_edge(LEFT)
+    ordering_i_text = get_heap_text("Ordering Invariant: parent ≤ children (min-heap)").next_to(shape_i_text, DOWN).to_edge(LEFT)
+    shape_i_text.set_color(TEAL)
+    ordering_i_text.set_color(PURPLE)
+    self.play(Write(shape_i_text), Write(ordering_i_text))
+    heap_next_step_text = get_heap_text("Let's see how priority queue operations(add, rem) are performed with min-heaps!").next_to(ordering_i_text, DOWN).to_edge(LEFT)
+    self.play(Write(heap_next_step_text))
 
     self.next_slide()
+    # Insertion
+    heap_text1_2 = get_heap_text("Insertion (pq_add)").next_to(title, DOWN).to_edge(LEFT)
+    shape_i_text_2 = get_heap_text("1. Put the new element in the leftmost open slot on the last level: shape invariant").next_to(heap_text1_2, DOWN).to_edge(LEFT)
+    shape_i_text_2.set_color(TEAL)
+    ordering_i_text_2 = get_heap_text("2. Repeatedly swap it up with its parent - sifting up: order invariant").next_to(shape_i_text_2, DOWN).to_edge(LEFT)
+    ordering_i_text_2.set_color(PURPLE)
+    self.play(Transform(heap_text1, heap_text1_2), Transform(shape_i_text, shape_i_text_2), Transform(ordering_i_text, ordering_i_text_2), FadeOut(heap_next_step_text))
+    heap_example_text = get_heap_text("We will demonstrate adding 6, 2 and 121 to this heap.").next_to(ordering_i_text_2, DOWN).to_edge(LEFT)
+    self.play(Write(heap_example_text))
+    self.next_slide()
+    heap.add_node(6, self, is_slide=True)
+    self.next_slide()
+    heap.add_node(2, self, is_slide=True)
+    self.next_slide()
+    heap.add_node(121, self, is_slide=True)
+    self.next_slide()
+    # Removal
+    heap_text1_3 = get_heap_text("Removal (pq_rem)").next_to(title, DOWN).to_edge(LEFT)
+    shape_i_text_3 = get_heap_text("1. Replace node to be removed with the last element on the last layer: shape_invariant").next_to(heap_text1_3, DOWN).to_edge(LEFT)
+    shape_i_text_3.set_color(TEAL)
+    ordering_i_text_3 = get_heap_text("2. Repeatedly swap it down with its child that has the highest priority(which is the lower key for min-heap): ordering invariant").next_to(shape_i_text_3, DOWN).to_edge(LEFT)
+    ordering_i_text_3.set_color(PURPLE)
+    self.play(Transform(heap_text1, heap_text1_3), Transform(shape_i_text, shape_i_text_3), Transform(ordering_i_text, ordering_i_text_3), FadeOut(heap_example_text))
+    heap_example_text_2 = get_heap_text("We will demonstrate removing A, B and C from this heap.").next_to(ordering_i_text_3, DOWN).to_edge(LEFT)
+    self.play(Write(heap_example_text_2))
+    self.next_slide()
+    heap.highlight_node(1, self, fill_color=RED)
+    heap.remove_node(1, self)
+    self.next_slide()
+    heap.show_indices(self)
+    self.next_slide()
+    heap.show_indices(self, binary=True)
+    self.next_slide()
+    heap.hide_indices(self)
 
-    heap.add_node(6, self)
-    self.next_slide()
-    heap.add_node(4, self)
-    heap.add_node(121, self)
-    self.next_slide()
-    heap.remove_node(2, self)
+
+
+
 
 
     swap_code_string = """
@@ -125,18 +181,26 @@ class PC13(Slide):
     intro_title = Text("       Precept 13:\nWhat are your priorities?", font="JetBrains Mono")
     self.play(Write(intro_title))
 
-    # self.intro_slide(intro_title)
+    self.next_slide()
+    announcements_title = Text("Announcements", font="JetBrains Mono").to_edge(UP)
+    self.play(Transform(intro_title, announcements_title))
+
+    self.announcements_slide(announcements_title)
 
     pq_title = Text("Priority Queues", font="JetBrains Mono").to_edge(UP)
     self.play(Transform(intro_title, pq_title))
 
-    # self.pq_slide(pq_title)
+    self.pq_slide(pq_title)
 
-    heap_title = Text("Heaps", font="JetBrains Mono").to_edge(UP)
+    heap_title = Text("Min-Heaps", font="JetBrains Mono").to_edge(UP)
     self.play(Transform(intro_title, heap_title))
 
     self.heap_slide(heap_title)
 
+def get_heap_text(raw_text, font_size = DEFAULT_FONT_SIZE * 0.4, width = 35):
+  wrapped = textwrap.fill(raw_text, width=width)
+  heap_text = Text(wrapped, font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.4)
+  return heap_text
 
 def get_pq_comparison_table(
     scale=1.0,
