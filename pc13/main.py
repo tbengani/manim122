@@ -196,6 +196,29 @@ class PC13(Slide):
     heap.add_node(1, self)
     heap.show_indices(self, binary=True, hide_prev=False)
 
+    self.next_slide()
+    heap.hide_indices(self)
+
+    heap_struct_string = """
+    typedef struct heap_header heap;
+    struct heap_header {
+    \tint limit; // limit = capacity+1
+    \tint next; // 1 <= next && next <= limit
+    \telem[] data; // \length(data) == limit
+    \thas_higher_priority_fn* prior; // != NULL
+    };
+    """
+
+    heap_struct = Code(
+                      code_string=heap_struct_string,
+                      add_line_numbers=False,
+                      language="python",
+                      background_config={"color":BLACK}
+                      )
+    heap_struct.scale(0.65)
+    heap_struct.align_to(heap_text1, UP).to_edge(LEFT)
+    self.play(Transform(heap_text1, heap_struct), FadeOut(heap_text2), FadeOut(heap_text3))
+
 
   def construct(self):
     intro_title = Text("       Precept 13:\nWhat are your priorities?", font="JetBrains Mono")
