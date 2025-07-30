@@ -233,6 +233,7 @@ class MinHeap(VGroup):
         self.array_vis = HeapArray(self, position=array_pos, cfg=cfg)
         self.add(self.edges, self.array_vis, self.index_labels)
 
+
         if scene:
             scene.add(self)
             for value in data:
@@ -294,7 +295,7 @@ class MinHeap(VGroup):
         self._add_and_heapify_animated(scene, value, is_initial_build=False, is_slide=is_slide)
         self._reposition_all_nodes(scene, duration=self.cfg.insert_reposition_duration)
 
-    def remove_node(self, index: int, scene: Scene):
+    def remove_node(self, index: int, scene: Scene, is_slide = False):
         """Removes a node at a specific index from the heap."""
         if not (1 <= index <= self.len):
             msg = Text("Heap is empty!" if self.len == 0 else f"Index {index} is out of bounds.").to_edge(UP)
@@ -313,6 +314,8 @@ class MinHeap(VGroup):
         self.len -= 1
 
         anims = [FadeOut(node_to_remove), self.array_vis.empty_cell_animated(last_idx)]
+
+
         if self.len > 0:
             edge_to_remove = None
             for edge in self.edges:
@@ -325,6 +328,9 @@ class MinHeap(VGroup):
                 anims.append(FadeOut(edge_to_remove))
 
         scene.play(*anims, run_time=self.cfg.remove_fade_duration)
+
+        if is_slide:
+          scene.next_slide()
 
         if self.len > 0 and idx_to_remove <= self.len:
             self._heapify_down(scene, idx_to_remove, swap_duration=self.cfg.remove_swap_duration)
@@ -451,11 +457,17 @@ class MinHeap(VGroup):
 
     def highlight_node(self, index: int, scene: Scene, **kwargs):
         if not (1 <= index <= self.len): return
-        scene.play(self.nodes[index].get_highlight_anim(**kwargs), run_time=self.cfg.highlight_duration)
+        scene.play(self.nodes[index].get_highlight_anim(**kwargs),
+                   self.array_vis.highlight_cell_animated(index, **kwargs),
+                   run_time=self.cfg.highlight_duration)
+
 
     def unhighlight_node(self, index: int, scene: Scene):
         if not (1 <= index <= self.len): return
-        scene.play(self.nodes[index].get_unhighlight_anim(), run_time=self.cfg.highlight_duration)
+        scene.play(self.nodes[index].get_unhighlight_anim(),
+                   self.array_vis.unhighlight_cell_animated(index),
+                   run_time=self.cfg.highlight_duration)
+
 
     def hide_indices(self, scene: Scene, duration: Optional[float] = None):
         """Fades out the array index labels."""
