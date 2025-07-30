@@ -32,7 +32,7 @@ class PC13(Slide):
 
         self.next_slide()
         self.play(FadeOut(bullets), FadeOut(chonk_honking))
-        chonk.spin(self, 4, 0.5)
+        self.play(chonk.spin(self, 4, 0.5))
         self.play(chonk.animate.shift(LEFT * 3), run_time=0.5)
         self.remove(chonk)
 
@@ -194,6 +194,7 @@ class PC13(Slide):
     self.next_slide()
 
     heap.add_node(1, self)
+    heap.show_indices(self, binary=True, hide_prev=False)
 
 
   def construct(self):
