@@ -23,7 +23,7 @@ class PC13(Slide):
         ]).arrange(DOWN, aligned_edge=LEFT)
 
         bullets.scale(0.7)
-        self.play(Write(bullets, run_time=3))
+        self.play(Write(bullets, run_time=1))
 
         chonk = Chonk(0.25)
         chonk.next_to(bullets, DOWN).align_to(bullets, LEFT)
@@ -32,7 +32,8 @@ class PC13(Slide):
 
         self.next_slide()
         self.play(FadeOut(bullets), FadeOut(chonk_honking))
-        self.play(chonk.animate.shift(LEFT * 3), run_time=1)
+        chonk.spin(self, 4, 0.5)
+        self.play(chonk.animate.shift(LEFT * 3), run_time=0.5)
         self.remove(chonk)
 
   def pq_slide(self, title):
@@ -62,7 +63,7 @@ class PC13(Slide):
     self.play(FadeOut(pq_add_code))
     pq.shift_to(self, pq.get_center() + UP)
     implementation_text = Text("There are various ways we can implement them", font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.5).next_to(pq, DOWN, buff=0.5).to_edge(LEFT, buff=0.5)
-    self.play(Write(implementation_text))
+    self.play(Write(implementation_text), run_time=0.5)
     table, table_mobjs = get_pq_comparison_table(scale=0.4)
     table.next_to(implementation_text, DOWN, buff=0.25)
     table.move_to([0, table.get_center()[1], 0])
@@ -121,7 +122,7 @@ class PC13(Slide):
     heap_text1_2 = get_heap_text("Insertion into heap").next_to(title, DOWN).to_edge(LEFT)
     shape_i_text_2 = get_heap_text("1. Put the new element in the leftmost open slot on the last level: shape invariant").next_to(heap_text1_2, DOWN).to_edge(LEFT)
     shape_i_text_2.set_color(TEAL)
-    ordering_i_text_2 = get_heap_text("2. Repeatedly swap it up with its parent - sifting up: order invariant").next_to(shape_i_text_2, DOWN).to_edge(LEFT)
+    ordering_i_text_2 = get_heap_text("2. Repeatedly compare with its parent and swap up if the parent has lower priority: order invariant").next_to(shape_i_text_2, DOWN).to_edge(LEFT)
     ordering_i_text_2.set_color(ORANGE)
     self.play(Transform(heap_text1, heap_text1_2), Transform(shape_i_text, shape_i_text_2), Transform(ordering_i_text, ordering_i_text_2), FadeOut(heap_next_step_text))
     heap_example_text1 = get_heap_text("We will demonstrate adding 6, 2 and 121 to this heap.").next_to(ordering_i_text_2, DOWN).to_edge(LEFT)
@@ -140,7 +141,7 @@ class PC13(Slide):
     heap_text1_3 = get_heap_text("Removal from heap").next_to(title, DOWN).to_edge(LEFT)
     shape_i_text_3 = get_heap_text("1. Swap node to be removed with the last element on the last layer, and then delete the last element: shape_invariant").next_to(heap_text1_3, DOWN).to_edge(LEFT)
     shape_i_text_3.set_color(TEAL)
-    ordering_i_text_3 = get_heap_text("2. Repeatedly swap the remaining element down with its child that has the highest priority(which is the lower key for min-heap): ordering invariant").next_to(shape_i_text_3, DOWN).to_edge(LEFT)
+    ordering_i_text_3 = get_heap_text("2. Repeatedly swap the remaining element down with its child that has the highest priority: ordering invariant").next_to(shape_i_text_3, DOWN).to_edge(LEFT)
     ordering_i_text_3.set_color(ORANGE)
     self.play(Transform(heap_text1, heap_text1_3), Transform(shape_i_text, shape_i_text_3), Transform(ordering_i_text, ordering_i_text_3), FadeOut(heap_example_text1))
     heap_example_text2 = get_heap_text("We will demonstrate removing 2, 15 and 6 from this heap.").next_to(ordering_i_text_3, DOWN).to_edge(LEFT)
@@ -172,11 +173,7 @@ class PC13(Slide):
     heap.show_indices(self, binary=True)
     self.next_slide()
 
-
-
-
-
-    swap_code_string1 = """
+    swap_code_string = """
     void swap_up(heap* H, int child) {
     \tint parent = child/2;
     \telem tmp = H->data[child];
@@ -185,7 +182,7 @@ class PC13(Slide):
     }
     """
     swap_code = Code(
-                      code_string=swap_code_string1,
+                      code_string=swap_code_string,
                       add_line_numbers=False,
                       language="python",
                       background_config={"color":BLACK}
@@ -195,6 +192,8 @@ class PC13(Slide):
     self.play(Write(swap_code))
 
     self.next_slide()
+
+    heap.add_node(1, self)
 
 
   def construct(self):
