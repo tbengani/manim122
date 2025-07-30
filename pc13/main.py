@@ -104,28 +104,28 @@ class PC13(Slide):
 
     note_text = Text("Note: the ORANGE nodes/cells represent elements being compared", font="JetBrains Mono", font_size=DEFAULT_FONT_SIZE * 0.3).to_corner(DL, buff=0.7).shift(DOWN * 0.2)
     note_text[8:14].set_color(ORANGE)
-    heap_text1 = get_heap_text("Heaps have two important invariants: the shape invariant and the ordering invariant. Every operation we do must maintain these invariants. ").next_to(title, DOWN).to_edge(LEFT)
+    heap_text1 = get_heap_text("Heaps are binary trees that store higher priority elements closer to the root. They have two important invariants: the shape invariant and the ordering invariant. Every operation we do must maintain these invariants. ").next_to(title, DOWN).to_edge(LEFT)
     self.play(Write(heap_text1), Write(note_text))
     self.next_slide()
 
     shape_i_text = get_heap_text("Shape Invariant: complete binary tree (except maybe last level)").next_to(heap_text1, DOWN).to_edge(LEFT)
     ordering_i_text = get_heap_text("Ordering Invariant: parent ≤ children (min-heap)").next_to(shape_i_text, DOWN).to_edge(LEFT)
     shape_i_text.set_color(TEAL)
-    ordering_i_text.set_color(PURPLE)
+    ordering_i_text.set_color(ORANGE)
     self.play(Write(shape_i_text), Write(ordering_i_text))
     heap_next_step_text = get_heap_text("Let's see how priority queue operations(add, rem) are performed with min-heaps!").next_to(ordering_i_text, DOWN).to_edge(LEFT)
     self.play(Write(heap_next_step_text))
-
     self.next_slide()
+
     # Insertion
-    heap_text1_2 = get_heap_text("Insertion (pq_add)").next_to(title, DOWN).to_edge(LEFT)
+    heap_text1_2 = get_heap_text("Insertion into heap").next_to(title, DOWN).to_edge(LEFT)
     shape_i_text_2 = get_heap_text("1. Put the new element in the leftmost open slot on the last level: shape invariant").next_to(heap_text1_2, DOWN).to_edge(LEFT)
     shape_i_text_2.set_color(TEAL)
     ordering_i_text_2 = get_heap_text("2. Repeatedly swap it up with its parent - sifting up: order invariant").next_to(shape_i_text_2, DOWN).to_edge(LEFT)
-    ordering_i_text_2.set_color(PURPLE)
+    ordering_i_text_2.set_color(ORANGE)
     self.play(Transform(heap_text1, heap_text1_2), Transform(shape_i_text, shape_i_text_2), Transform(ordering_i_text, ordering_i_text_2), FadeOut(heap_next_step_text))
-    heap_example_text = get_heap_text("We will demonstrate adding 6, 2 and 121 to this heap.").next_to(ordering_i_text_2, DOWN).to_edge(LEFT)
-    self.play(Write(heap_example_text))
+    heap_example_text1 = get_heap_text("We will demonstrate adding 6, 2 and 121 to this heap.").next_to(ordering_i_text_2, DOWN).to_edge(LEFT)
+    self.play(Write(heap_example_text1))
     self.next_slide()
     heap.add_node(6, self, is_slide=True)
     self.next_slide()
@@ -133,49 +133,66 @@ class PC13(Slide):
     self.next_slide()
     heap.add_node(121, self, is_slide=True)
     self.next_slide()
+    heap_example_text_2 = get_heap_text("Note that pq_add is identical to inserting an element into the heap").next_to(ordering_i_text_2, DOWN).to_edge(LEFT)
+    self.play(Transform(heap_example_text1, heap_example_text_2))
+    self.next_slide()
     # Removal
-    heap_text1_3 = get_heap_text("Removal (pq_rem)").next_to(title, DOWN).to_edge(LEFT)
-    shape_i_text_3 = get_heap_text("1. Replace node to be removed with the last element on the last layer: shape_invariant").next_to(heap_text1_3, DOWN).to_edge(LEFT)
+    heap_text1_3 = get_heap_text("Removal from heap").next_to(title, DOWN).to_edge(LEFT)
+    shape_i_text_3 = get_heap_text("1. Swap node to be removed with the last element on the last layer, and then delete the last element: shape_invariant").next_to(heap_text1_3, DOWN).to_edge(LEFT)
     shape_i_text_3.set_color(TEAL)
-    ordering_i_text_3 = get_heap_text("2. Repeatedly swap it down with its child that has the highest priority(which is the lower key for min-heap): ordering invariant").next_to(shape_i_text_3, DOWN).to_edge(LEFT)
-    ordering_i_text_3.set_color(PURPLE)
-    self.play(Transform(heap_text1, heap_text1_3), Transform(shape_i_text, shape_i_text_3), Transform(ordering_i_text, ordering_i_text_3), FadeOut(heap_example_text))
-    heap_example_text_2 = get_heap_text("We will demonstrate removing A, B and C from this heap.").next_to(ordering_i_text_3, DOWN).to_edge(LEFT)
-    self.play(Write(heap_example_text_2))
+    ordering_i_text_3 = get_heap_text("2. Repeatedly swap the remaining element down with its child that has the highest priority(which is the lower key for min-heap): ordering invariant").next_to(shape_i_text_3, DOWN).to_edge(LEFT)
+    ordering_i_text_3.set_color(ORANGE)
+    self.play(Transform(heap_text1, heap_text1_3), Transform(shape_i_text, shape_i_text_3), Transform(ordering_i_text, ordering_i_text_3), FadeOut(heap_example_text1))
+    heap_example_text2 = get_heap_text("We will demonstrate removing 2, 15 and 6 from this heap.").next_to(ordering_i_text_3, DOWN).to_edge(LEFT)
+    self.play(Write(heap_example_text2))
     self.next_slide()
-    heap.highlight_node(1, self, fill_color=RED)
-    heap.remove_node(1, self)
+    heap.highlight_node(1, self, fill_color=TEAL)
+    heap.remove_node(1, self, is_slide=True)
     self.next_slide()
+    heap.highlight_node(2, self, fill_color=TEAL)
+    heap.remove_node(2, self, is_slide=True)
+    self.next_slide()
+    heap.highlight_node(3, self, fill_color=TEAL)
+    heap.remove_node(3, self, is_slide=True)
+    self.next_slide()
+    heap_example_text2_2 = get_heap_text("Note that pq_rem is identical to removing THE ROOT from a heap").next_to(ordering_i_text_3, DOWN).to_edge(LEFT)
+    self.play(Transform(heap_example_text2, heap_example_text2_2))
+    self.next_slide()
+
+    # Array Representation
+    heap_text1_4 = get_heap_text("How do we represent heaps in code?").next_to(title, DOWN).to_edge(LEFT)
+    self.play(Transform(heap_text1, heap_text1_4), FadeOut(heap_example_text2), FadeOut(shape_i_text),FadeOut(ordering_i_text), )
+    heap_text2 = get_heap_text("With arrays! Look at the indices of the nodes in the array.").next_to(heap_text1_4, DOWN).to_edge(LEFT)
+    self.play(Write(heap_text2))
     heap.show_indices(self)
     self.next_slide()
+    heap_text3 = get_heap_text("Let's see them in binary. How do we know where a node's parents or children are?").next_to(heap_text2, DOWN).to_edge(LEFT)
+    heap_text3.set_color(ORANGE)
+    self.play(Write(heap_text3))
     heap.show_indices(self, binary=True)
     self.next_slide()
-    heap.hide_indices(self)
 
 
-
-
-
-
-    swap_code_string = """
-    void swap_up(heap* H, int child)
-    //@requires is_heap_safe(H);
-    //@requires 2 <= child && child < H->next;
-    //@requires !ok_above(H, child/2, child); // parent == child/2
-    //@ensures ok_above(H, child/2, child);
-    {
-    int parent = child/2;
-    elem tmp = H->data[child];
-    H->data[child] = H->data[parent];
-    H->data[parent] = tmp;
+    swap_up_code_string = """
+    void swap_up(heap* H, int child) {
+    \tint parent = child/2;
+    \telem tmp = H->data[child];
+    \tH->data[child] = H->data[parent];
+    \tH->data[parent] = tmp;
     }
     """
-    swap_code = Code(
-                      code_string=swap_code_string,
+    swap_up_code = Code(
+                      code_string=swap_up_code_string,
                       add_line_numbers=False,
-                      language="python"
-                      ).to_edge(LEFT, buff=0.5)
-    # self.play(Write(swap_code))
+                      language="python",
+                      background_config={"color":BLACK}
+                      )
+    swap_up_code.scale(0.65)
+    swap_up_code.next_to(heap_text3, DOWN).to_edge(LEFT)
+    self.play(Write(swap_up_code))
+
+    self.next_slide()
+
 
   def construct(self):
     intro_title = Text("       Precept 13:\nWhat are your priorities?", font="JetBrains Mono")
