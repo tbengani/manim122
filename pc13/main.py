@@ -173,7 +173,10 @@ class PC13(Slide):
     self.next_slide()
 
 
-    swap_up_code_string = """
+
+
+
+    swap_code_string1 = """
     void swap_up(heap* H, int child) {
     \tint parent = child/2;
     \telem tmp = H->data[child];
@@ -181,15 +184,15 @@ class PC13(Slide):
     \tH->data[parent] = tmp;
     }
     """
-    swap_up_code = Code(
-                      code_string=swap_up_code_string,
+    swap_code = Code(
+                      code_string=swap_code_string1,
                       add_line_numbers=False,
                       language="python",
                       background_config={"color":BLACK}
                       )
-    swap_up_code.scale(0.65)
-    swap_up_code.next_to(heap_text3, DOWN).to_edge(LEFT)
-    self.play(Write(swap_up_code))
+    swap_code.scale(0.65)
+    swap_code.next_to(heap_text3, DOWN).to_edge(LEFT)
+    self.play(Write(swap_code))
 
     self.next_slide()
 
