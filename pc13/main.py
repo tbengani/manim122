@@ -12,8 +12,8 @@ class PQ(VMobject):
 class PC13(Slide):
   def announcements_slide(self, title):
         points = [
-        "Final review session: Saturday 4/26\n from 12pm to 3pm in NSH 1305",
-        "Final exam (see Ed for room assignments):\n Monday April 28th from 1pm to 4pm",
+        "Final Review Session: Thursday July \n31st from 1pm to 4pm in TEP 1403",
+        "Final Exam: Friday August 1st from \n8am to 11am in DH 2210",
         "Prog 11 (c0vm checkpoint) due TODAY!",
         "QOTD: What's the most cursed way to \nimplement a stack?",
         ]
