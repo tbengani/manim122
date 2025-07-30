@@ -81,7 +81,6 @@ class PC13(Slide):
         array_font_size=18,
     )
 
-    # 2. Pass the custom config to the MinHeap
     heap = MinHeap(
         data=[3, 15, 122],
         limit=13,
@@ -96,9 +95,10 @@ class PC13(Slide):
 
     heap.add_node(6, self)
     self.next_slide()
-    heap.add_node(3, self)
-
+    heap.add_node(4, self)
+    heap.add_node(121, self)
     self.next_slide()
+    heap.remove_node(2, self)
 
 
     swap_code_string = """
