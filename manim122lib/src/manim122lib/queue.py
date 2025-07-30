@@ -140,8 +140,8 @@ class PriorityQueue(VGroup):
             initial_elements.add(element)
         self.add(initial_elements)
 
-        scene.play(Create(self.top_bar), Create(self.bottom_bar))
-        scene.play(Write(initial_elements))
+        scene.play(Create(self.top_bar, run_time=0.5), Create(self.bottom_bar, run_time=0.5))
+        scene.play(Write(initial_elements), run_time=0.5)
 
     def pq_add(self, scene: Scene, value: int, duration: Optional[float] = None):
         """Animates adding a new element with a smooth slide from the back."""

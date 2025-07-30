@@ -434,9 +434,10 @@ class MinHeap(VGroup):
     def translate_array_animated(self, scene: Scene, target_position: np.ndarray, duration: float = 1.0):
         scene.play(self.array_vis.animate.move_to(target_position), run_time=duration)
 
-    def show_indices(self, scene: Scene, binary: bool = False):
+    def show_indices(self, scene: Scene, binary: bool = False, hide_prev = True):
         """Fades in the array index above each node."""
-        self.hide_indices(scene, duration=0.05) # Clear existing before showing new ones
+        if (hide_prev):
+          self.hide_indices(scene, duration=0.05) # Clear existing before showing new ones
 
         anims = []
         for i in range(1, self.len + 1):
